@@ -38,8 +38,6 @@ def analysis(imgpath):
         Lab_b.append(float(format(lab.lab_b,".2f")))
         hsv_s.append(float(format(hsv.hsv_s,".2f"))*100)
 
-    print('Lab_b[skin, eyebrow, eye]',Lab_b)
-    print('hsv_s[skin, eyebrow, eye]',hsv_s)
     #######################################
     #      Personal color Analysis        #
     #######################################
@@ -56,4 +54,5 @@ def analysis(imgpath):
         else:
             tone = '겨울쿨톤(winter)'
     # Print Result
-    print('{}의 퍼스널 컬러는 {}입니다.'.format(imgpath, tone))
+    # print('{}의 퍼스널 컬러는 {}입니다.'.format(imgpath, tone))
+    return tone

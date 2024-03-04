@@ -32,7 +32,6 @@ class DetectFace:
 
     # return type : np.array
     def detect_face_part(self):
-        face_parts = [[],[],[],[],[],[],[]]
         # detect faces in the grayscale image
         rect = self.detector(cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY), 1)[0]
 
@@ -41,20 +40,26 @@ class DetectFace:
         shape = self.predictor(cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY), rect)
         shape = face_utils.shape_to_np(shape)
 
-        idx = 0
+        # initialize face_parts list with empty arrays
+        # face_parts = [np.array([]) for _ in range(len(face_utils.FACIAL_LANDMARKS_IDXS))]  # 이 부분을 주석 처리하였습니다.
+
         # loop over the face parts individually
-        for (name, (i, j)) in face_utils.FACIAL_LANDMARKS_IDXS.items():
-            face_parts[idx] = shape[i:j]
-            idx += 1
-        face_parts = face_parts[1:5]
-        # set the variables
-        # Caution: this coordinates fits on the RESIZED image.
-        self.right_eyebrow = self.extract_face_part(face_parts[0])
-        #cv2.imshow("right_eyebrow", self.right_eyebrow)
-        #cv2.waitKey(0)
-        self.left_eyebrow = self.extract_face_part(face_parts[1])
-        self.right_eye = self.extract_face_part(face_parts[2])
-        self.left_eye = self.extract_face_part(face_parts[3])
+        for idx, (name, (i, j)) in enumerate(face_utils.FACIAL_LANDMARKS_IDXS.items()):
+            # face_parts[idx] = shape[i:j]  # 이 부분을 주석 처리하였습니다.
+
+            # 각 face_parts 리스트를 임시로 만들어서 바로 shape[i:j]를 할당합니다.
+            face_part = shape[i:j]
+
+            # set the variables
+            # Caution: this coordinates fits on the RESIZED image.
+            if idx == 0:
+                self.right_eyebrow = self.extract_face_part(face_part)
+            elif idx == 1:
+                self.left_eyebrow = self.extract_face_part(face_part)
+            elif idx == 2:
+                self.right_eye = self.extract_face_part(face_part)
+            elif idx == 3:
+                self.left_eye = self.extract_face_part(face_part)
         # Cheeks are detected by relative position to the face landmarks
         self.left_cheek = self.img[shape[29][1]:shape[33][1], shape[4][0]:shape[48][0]]
         self.right_cheek = self.img[shape[29][1]:shape[33][1], shape[54][0]:shape[12][0]]
@@ -67,9 +72,8 @@ class DetectFace:
         adj_points = np.array([np.array([p[0]-x, p[1]-y]) for p in face_part_points])
 
         # Create an mask
-        mask = np.zeros((crop.shape[0], crop.shape[1]))
+        mask = np.zeros((crop.shape[0], crop.shape[1]), dtype=np.uint8)
         cv2.fillConvexPoly(mask, adj_points, 1)
-        mask = mask.astype(np.bool)
         crop[np.logical_not(mask)] = [255, 0, 0]
 
         return crop
